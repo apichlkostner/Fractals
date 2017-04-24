@@ -1,32 +1,31 @@
 #!/usr/bin/python3
 
-# Copyright (C) 2017  Arthur Pichlkostner
+#    Fractal - calculation of fractals
+#    Copyright (C) 2017 Arthur Pichlkostner
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QDoubleSpinBox
 from PyQt5.QtGui import QColor, QPixmap, QImage
+import time
 
 import JuliaSet
 
-class Example(QWidget):
-    pixmap = None
+class MainWindow(QWidget):
     myImage = None
-    lbl = None
     
     def __init__(self):
         super().__init__()        
@@ -34,26 +33,49 @@ class Example(QWidget):
         
         
     def initUI(self):
-        global pixmap, lbl 
         hbox = QHBoxLayout(self)
         
-        okButton = QPushButton("OK")
+        # userinterface
+        interface_vbox = QVBoxLayout()        
+        
+        self.dsb_real = QDoubleSpinBox()
+        self.dsb_real.setMinimum(-100)
+        self.dsb_real.setMaximum(100)
+        interface_vbox.addWidget(self.dsb_real)
+        
+        self.dsb_complex = QDoubleSpinBox()
+        self.dsb_complex.setMinimum(-100)
+        self.dsb_complex.setMaximum(100)
+        self.dsb_complex.setValue(1.0)
+        interface_vbox.addWidget(self.dsb_complex)
+        
+        calcButton = QPushButton("Calculate")
+        interface_vbox.addWidget(calcButton)
+        calcButton.clicked.connect(self.calcClicked)
+        
+        exitButton = QPushButton("Exit")
+        interface_vbox.addWidget(exitButton)
+        exitButton.clicked.connect(self.exitClicked)
+                
+        hbox.addLayout(interface_vbox)
+        
+        self.lbl = QLabel(self)
+        emptyPixmap = QPixmap(500, 500)
+        emptyPixmap.fill(QColor(100, 100, 100))
+        self.lbl.setPixmap(emptyPixmap)
+        #jm = JuliaSet.JuliaSet(complex(0.25, 0))
+        #jm.calc()
+        #juliaImage = jm.getImage()
+        
+        #lbl.setPixmap(QPixmap(juliaImage))   
 
-        hbox.addWidget(okButton)
-        
-        lbl = QLabel(self)
-        
-        jm = JuliaSet.JuliaSet()
-        jm.calc()
-        juliaImage = jm.getImage()
-        
-        lbl.setPixmap(QPixmap(juliaImage))   
-
-        hbox.addWidget(lbl)
+        hbox.addWidget(self.lbl)
         self.setLayout(hbox)
         
         self.setWindowTitle('Julia set')
-        self.show()        
+        self.show()
+        time.sleep(0.2)
+        self.calcClicked()
     
     def resizeEvent(self, *args, **kwargs):
         #pixmap_scaled = pixmap.scaledToWidth(self.width()-200)
@@ -62,14 +84,23 @@ class Example(QWidget):
     
     def resize(self, *args, **kwargs):
         ret = QWidget.resize(self, *args, **kwargs)
-        pixmap_scaled = pixmap.scaledToWidth(self.width())
-        lbl.setPixmap(pixmap_scaled)
+        pixmap_scaled = self.pixmap.scaledToWidth(self.width())
+        self.lbl.setPixmap(pixmap_scaled)
         
         return ret 
-                
+    
+    def calcClicked(self):
+        val_real = self.dsb_real.value()
+        val_complex = self.dsb_complex.value()
+        self.jm = JuliaSet.JuliaSet(complex(val_real, val_complex))
+        self.jm.calc()
+        juliaImage = self.jm.getImage()        
+        self.lbl.setPixmap(QPixmap(juliaImage)) 
+        
+    def exitClicked(self):
+        quit()
         
 if __name__ == '__main__':
-    
     app = QApplication(sys.argv)
-    ex = Example()
+    ex = MainWindow()
     sys.exit(app.exec_())
