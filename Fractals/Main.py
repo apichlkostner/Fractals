@@ -74,7 +74,6 @@ class MainWindow(QWidget):
         
         self.setWindowTitle('Julia set')
         self.show()
-        time.sleep(0.2)
         self.calcClicked()
     
     def resizeEvent(self, *args, **kwargs):

@@ -74,11 +74,10 @@ class JuliaSet():
             xf = startPos.real + delta.real / deltaPix[0] * (pixH - startPix[0])
             for pixV in range(startPix[1], endPix[1]):
                 yf = endPos.imag - delta.imag / deltaPix[1] * pixV
-                self.rawData[pixH][pixV] = self.calcPoint(xf, yf)
+                self.rawData[pixH][pixV] = self.calcPoint(complex(xf, yf), 100)
 
-    def calcPoint(self, xf, yf):
-        jmval = complex(xf, yf)
-        for val in range(100):
+    def calcPoint(self, jmval, maxrec):
+        for val in range(maxrec):
             jmval = jmval * jmval + self.C
             if abs(jmval) > self.R:
                 break
